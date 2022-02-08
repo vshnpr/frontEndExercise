@@ -3,16 +3,16 @@ import * as React from "react";
 import axios from "axios";
 const { useEffect, useState } = React;
 
-async function getUser() {
+const getUser = (pagenumber) => {
   return axios
-    .get("https://randomuser.me/api")
+    .get(`https://randomuser.me/api?page=${pagenumber}`)
     .then(({ data }) => {
       return data;
     })
     .catch((error) => {
       console.error(error);
     });
-}
+};
 
 const getFullUserName = (userinfo) => {
   const {
@@ -25,11 +25,21 @@ export default function App() {
   const [increment, setIncrement] = useState(0);
   const [userdata, setUserdata] = useState("");
   const [userInfos, setUserInfos] = useState([]);
+  const [nextPage, setNextpage] = useState(1);
 
-  useEffect(() => {
-    getUser().then((randomData) => {
+  const getNextUser = () => {
+    getUser(nextPage).then((randomData) => {
       setUserdata(JSON.stringify(randomData, null, 2) || "Not found");
       setUserInfos(randomData.results);
+      setNextpage(randomData.info.page + 1);
+    });
+  };
+
+  useEffect(() => {
+    getUser(nextPage).then((randomData) => {
+      setUserdata(JSON.stringify(randomData, null, 2) || "Not found");
+      setUserInfos(randomData.results);
+      setNextpage(randomData.info.page + 1);
     });
   }, []);
 
@@ -43,7 +53,14 @@ export default function App() {
           setIncrement(increment + 1);
         }}
       >
-        Increse Counter
+        Increment
+      </button>
+      <button
+        onClick={() => {
+          getNextUser(nextPage);
+        }}
+      >
+        Fetch next user
       </button>
       {userInfos.map((user) => (
         <div>
